@@ -60,6 +60,7 @@ window.SONGBOOK_LANG.mn = {
   toastLibraryReloaded: "Дуунуудын сан шинэчлэгдлээ",
   toastLibraryOffline: "Та офлайн байна — энэ төхөөрөмжид хадгалагдсан хувилбарыг харуулж байна",
   toastLibraryReloadFailed: "Шинэчилж чадсангүй — интернэт холболтоо шалгаад дахин оролдоно уу",
+  toastReloadAppOffline: "Та офлайн байна — энэ төхөөрөмжид хадгалагдсан хувилбараар дахин ачаалж байна",
   copyEmailAria: "Имэйл хаягийг хуулах",
   toastEmailCopied: "Имэйл хаяг хуулагдлаа",
   toastEmailCopyFailed: "Хуулж чадсангүй — дээрх хаягийг гараар хуулна уу",

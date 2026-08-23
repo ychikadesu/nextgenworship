@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Offline</title>
+<meta name="robots" content="noindex">
+<!--
+  This page is served by the service worker (see service-worker.js's fetch
+  handler) whenever a page navigation fails AND there's nothing cached to
+  fall back to — the case that used to leave people staring at the
+  browser's own generic "no internet" page, which breaks the illusion of
+  this being an installed app rather than a website.
+
+  Deliberately self-contained: no external CSS, fonts, or icon files. This
+  is exactly the fallback for when something else failed to load, so it
+  can't itself depend on anything else loading successfully. It reads
+  sb-theme / sb-accent / sb-ui-lang from localStorage (same-origin, so
+  they're available here) purely to *look* consistent with the main app —
+  it does not need lang/*.js or css/style.css for that.
+-->
+<style>
+  :root {
+    --paper: #F3F3F1;
+    --ink: #23262F;
+    --ink-soft: #4B4E58;
+    --ink-faint: #8A8D96;
+    --line: #E1E1DC;
+    --surface: #FFFFFF;
+    --accent: #44CAFD;
+    --accent-strong: #0E86B8;
+    color-scheme: light;
+  }
+  html[data-theme="dark"] {
+    --paper: #141A2B;
+    --ink: #ECE9DE;
+    --ink-soft: #B7BCCB;
+    --ink-faint: #6C7285;
+    --line: #2A3247;
+    --surface: #1B2237;
+    --accent: #6FDBFF;
+    --accent-strong: #BEEFFF;
+    color-scheme: dark;
+  }
+  html[data-accent="periwinkle"] { --accent: #5B7FDE; --accent-strong: #3A56AE; }
+  html[data-accent="sage"]       { --accent: #6FA37E; --accent-strong: #3F6350; }
+  html[data-accent="lavender"]   { --accent: #8C7FCB; --accent-strong: #5B4FA8; }
+  html[data-accent="aqua"]       { --accent: #44CAFD; --accent-strong: #0E86B8; }
+  html[data-accent="cinnamon"]   { --accent: #A9762F; --accent-strong: #7A5620; }
+
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    min-height: 100%;
+    padding: 32px 24px calc(32px + env(safe-area-inset-bottom));
+    text-align: center;
+  }
+  .icon {
+    width: 56px;
+    height: 56px;
+    color: var(--ink-faint);
+  }
+  h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  p {
+    margin: 0;
+    max-width: 320px;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  button {
+    margin-top: 10px;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 28px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--surface);
+    background: var(--accent-strong);
+    cursor: pointer;
+  }
+  button:active { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <line x1="2" y1="2" x2="22" y2="22"></line>
+  <path d="M8.5 16.5a5 5 0 0 1 7 0"></path>
+  <path d="M5 13a9.5 9.5 0 0 1 5.5-2.7"></path>
+  <path d="M13.5 10.3A9.5 9.5 0 0 1 19 13"></path>
+  <path d="M1.5 9a13.5 13.5 0 0 1 5-2.9"></path>
+  <path d="M17.5 6.1A13.5 13.5 0 0 1 22.5 9"></path>
+  <circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"></circle>
+</svg>
+
+<h1 id="offline-title">You're offline</h1>
+<p id="offline-msg">This page isn't saved on your device yet. Reconnect and try again.</p>
+<button id="reload-btn" type="button">Reload</button>
+
+<script>
+  // Match the main app's saved theme/accent so this doesn't look like a
+  // different app when it appears.
+  try {
+    var theme = localStorage.getItem('sb-theme');
+    if (theme) document.documentElement.setAttribute('data-theme', theme);
+    else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    var accent = localStorage.getItem('sb-accent');
+    if (accent) document.documentElement.setAttribute('data-accent', accent);
+  } catch (e) { /* localStorage unavailable — just use the defaults above */ }
+
+  // A tiny, self-contained translation of just this page's three strings —
+  // matching the main app's language choice (sb-ui-lang) without needing
+  // to load lang/*.js, which this fallback page can't depend on.
+  var STRINGS = {
+    mn: { title: "Та офлайн байна", msg: "Энэ хуудас таны төхөөрөмжид хадгалагдаагүй байна. Интернэтэд холбогдоод дахин оролдоно уу.", btn: "Дахин ачаалах" },
+    mn2: { title: "Та офлайн байна", msg: "Энэ хуудас таны төхөөрөмжид хадгалагдаагүй байна. Интернэтэд холбогдоод дахин оролдоно уу.", btn: "Дахин ачаалах" },
+    en: { title: "You're offline", msg: "This page isn't saved on your device yet. Reconnect and try again.", btn: "Reload" },
+    kr: { title: "오프라인 상태입니다", msg: "이 페이지는 아직 기기에 저장되지 않았습니다. 인터넷에 연결한 후 다시 시도하세요.", btn: "다시 불러오기" },
+  };
+  try {
+    var lang = localStorage.getItem('sb-ui-lang');
+    var s = STRINGS[lang] || STRINGS.mn;
+    document.getElementById('offline-title').textContent = s.title;
+    document.getElementById('offline-msg').textContent = s.msg;
+    document.getElementById('reload-btn').textContent = s.btn;
+    document.documentElement.setAttribute('lang', lang || 'mn');
+  } catch (e) { /* keep the default English text above */ }
+
+  document.getElementById('reload-btn').addEventListener('click', function () {
+    window.location.reload();
+  });
+</script>
+
+</body>
+</html>

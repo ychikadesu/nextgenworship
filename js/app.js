@@ -6,7 +6,7 @@
 // manifest — nothing here needs to change.
 // =========================================================
 
-const APP_VERSION = 'v1.0.0';
+const APP_VERSION = 'v1.0.1';
 
 // --- Hard update backstop -------------------------------------------------
 // Everything above (scrollRestoration, controllerchange auto-reload,
@@ -407,6 +407,22 @@ async function reloadApp() {
   const btn = document.getElementById('reload-app-btn');
   btn.disabled = true;
   btn.textContent = t('reloadAppBtnBusy');
+
+  // Offline: unregistering the service worker and clearing every cache
+  // leaves nothing behind to serve the reload with — nothing can be
+  // re-downloaded without a connection. That combination used to be
+  // exactly what stranded people on a broken/blank reload while offline.
+  // Skip the destructive cleanup entirely here and just reload normally —
+  // the still-intact service worker and cache keep serving the app as-is,
+  // and the offline fallback page (see service-worker.js) covers it even
+  // if something's still missing.
+  if (!navigator.onLine) {
+    showToast(t('toastReloadAppOffline'));
+    btn.disabled = false;
+    btn.textContent = t('reloadAppBtn');
+    window.location.reload();
+    return;
+  }
 
   try {
     if ('serviceWorker' in navigator) {

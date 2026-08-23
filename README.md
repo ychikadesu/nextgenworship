@@ -29,6 +29,7 @@ the app is already set up to grow into them without a rewrite.
 
 ```
 index.html          App shell — every page lives here, toggled by JS
+offline.html         Self-contained offline fallback page (see "Offline screen" below)
 css/style.css        Design tokens + styles (light & dark themes)
 js/app.js            All app logic: search, sort, transpose, language switching, install
 app.js               Mirror of js/app.js — not loaded by index.html; kept in
@@ -167,6 +168,26 @@ hard-update backstop described in that file's own comments.
   browser console for a service worker registration error, and confirm
   `manifest.json` and both icon files are reachable at their exact paths —
   those are the two most common installability blockers.
+
+## Offline screen
+
+`offline.html` is a small, self-contained fallback page (no dependency on
+`css/style.css`, fonts, or `js/app.js` — deliberately, since it exists for
+the case where something else failed to load) that the service worker shows
+instead of the browser's own generic "no internet" page whenever a page
+navigation fails with nothing cached to fall back to — the thing that used
+to make an installed, offline PWA suddenly look like a broken website. It
+reads the same `sb-theme` / `sb-accent` / `sb-ui-lang` values from
+`localStorage` that the main app saves, so it matches light/dark mode,
+accent color, and language without needing its own settings. It's part of
+`CORE_SHELL` in `service-worker.js`, so it's always cached alongside the
+rest of the required app shell.
+
+Settings → **Reload app** also checks `navigator.onLine` before doing
+anything: while offline, it skips clearing the cache/service worker (there's
+nothing to safely replace them with without a connection) and just reloads
+normally instead, so the still-cached app keeps working rather than
+reloading into a blank/broken page.
 
 ## Built for what's next
 

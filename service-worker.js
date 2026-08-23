@@ -1,6 +1,6 @@
 // Songbook service worker — offline-first app shell + data cache.
 // Bump CACHE_VERSION whenever shipped files change so clients pick up updates.
-const CACHE_VERSION = 'songbook-v1.0.0';
+const CACHE_VERSION = 'songbook-v1.0.1';
 
 // The core shell: without any one of these the app can't run at all, so
 // these are cached atomically — if even one fails, the whole install fails
@@ -9,6 +9,7 @@ const CACHE_VERSION = 'songbook-v1.0.0';
 const CORE_SHELL = [
   './',
   './index.html',
+  './offline.html',
   './manifest.json',
   './css/style.css',
   './js/app.js',
@@ -135,7 +136,20 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => cached); // offline: fall back to cache
+        .catch(() => {
+          if (cached) return cached;
+          // Nothing cached AND the network failed. For a page navigation,
+          // this is the case that used to fall through to the browser's
+          // own generic "no internet" page — jarring in an installed app.
+          // Show our own offline screen instead (also core-shell cached,
+          // so it's always available). Any other kind of request (a
+          // script, an image, song data) just fails as before; the app's
+          // own code already handles those (e.g. loadSongData()'s
+          // IndexedDB fallback).
+          const isNavigation = event.request.mode === 'navigate'
+            || event.request.destination === 'document';
+          return isNavigation ? caches.match('./offline.html') : undefined;
+        });
 
       return cached || networkFetch;
     })

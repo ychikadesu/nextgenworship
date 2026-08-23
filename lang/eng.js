@@ -64,6 +64,7 @@ window.SONGBOOK_LANG.en = {
   toastLibraryReloaded: "Song database refreshed",
   toastLibraryOffline: "You're offline — showing what's already saved on this device",
   toastLibraryReloadFailed: "Couldn't refresh — check your connection and try again",
+  toastReloadAppOffline: "You're offline — reloading with what's already saved on this device",
   copyEmailAria: "Copy email address",
   toastEmailCopied: "Email address copied",
   toastEmailCopyFailed: "Couldn't copy — the address is shown above to copy manually",

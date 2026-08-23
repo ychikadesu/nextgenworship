@@ -60,6 +60,7 @@ window.SONGBOOK_LANG.kr = {
   toastLibraryReloaded: "곡 데이터베이스를 새로고침했습니다",
   toastLibraryOffline: "오프라인 상태입니다 — 이 기기에 저장된 내용을 표시합니다",
   toastLibraryReloadFailed: "새로고침하지 못했습니다 — 인터넷 연결을 확인한 후 다시 시도하세요",
+  toastReloadAppOffline: "오프라인 상태입니다 — 기기에 저장된 버전으로 다시 불러옵니다",
   copyEmailAria: "이메일 주소 복사",
   toastEmailCopied: "이메일 주소가 복사되었습니다",
   toastEmailCopyFailed: "복사하지 못했습니다 — 위 주소를 직접 복사해 주세요",
