@@ -166,17 +166,27 @@ button { font-family: inherit; }
 /* ---------- page shell ---------- */
 .page {
   /* Each page is its own fixed-viewport-size, independently scrolling box
-     (see the note on body, above) rather than part of document flow. */
+     (see the note on body, above) rather than part of document flow.
+     This element owns the scrollbar, and it's kept edge-to-edge (full
+     viewport width) on purpose: the content itself is width-capped by
+     .page-inner below instead. If the max-width/centering lived here
+     directly, the scrollbar would render at the edge of that narrow
+     centered box instead of the browser's actual edge — fine on phones
+     (where the box already fills the viewport) but on wide/desktop
+     screens it visually strands the scrollbar in the middle of the
+     window instead of anchoring it to the right side like a normal page. */
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+}
+.page-inner {
   max-width: 720px;
   margin: 0 auto;
   padding: 0 18px calc(var(--nav-h) + env(safe-area-inset-bottom) + 40px);
 }
-body.nav-hidden .page {
+body.nav-hidden .page-inner {
   padding-bottom: calc(env(safe-area-inset-bottom) + 40px);
 }
 
