@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="mn" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Songbook / Дууны ном</title>
+<meta name="description" content="Офлайнаар ажилладаг дууны ном / An offline-first worship songbook.">
+<meta name="theme-color" content="#1F2A44" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F3F3F1" media="(prefers-color-scheme: light)">
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/app-icon-192.png">
+<link rel="apple-touch-icon" href="icons/app-icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- Shorter name for the phone/desktop home-screen label -->
+<meta name="apple-mobile-web-app-title" content="NGWorship">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="splash-screen" aria-hidden="true">
+  <img src="icons/splash-logo.png" alt="" id="splash-logo">
+</div>
+
+<!-- ===== SONGS PAGE ===== -->
+<main id="page-songs" class="page" data-page="songs">
+ <div class="page-inner">
+  <header class="page-header">
+    <div class="brand">
+      <svg class="brand-mark" data-icon="brand-mark" viewBox="0 0 24 24" aria-hidden="true"></svg>
+      <h1 id="t-appTitle">Дууны ном</h1>
+    </div>
+  </header>
+
+  <div class="search-bar">
+    <svg class="search-icon" data-icon="search" viewBox="0 0 24 24" aria-hidden="true"></svg>
+    <input id="search-input" type="search" inputmode="search" autocomplete="off">
+  </div>
+
+  <div class="sort-row">
+    <div class="sort-group" role="group" aria-label="Sort by">
+      <button class="sort-btn" data-sort-by="num" aria-pressed="true"></button>
+      <button class="sort-btn" data-sort-by="alpha" aria-pressed="false"></button>
+    </div>
+    <div class="sort-group" role="group" aria-label="Sort order">
+      <button class="sort-btn" data-sort-order="asc" aria-pressed="true"></button>
+      <button class="sort-btn" data-sort-order="desc" aria-pressed="false"></button>
+    </div>
+  </div>
+
+  <p id="results-count" class="results-count"></p>
+
+  <ul id="song-list" class="song-list"></ul>
+
+  <p id="empty-state" class="empty-state" hidden></p>
+ </div>
+</main>
+
+<!-- ===== SONG VIEW PAGE ===== -->
+<main id="page-song-view" class="page" data-page="song-view" hidden>
+ <div class="page-inner">
+  <div id="song-view-topbar" class="song-view-topbar">
+    <span id="t-topbarAppName">Дууны ном</span>
+  </div>
+
+  <header class="song-view-header">
+    <button id="back-btn" class="icon-btn" aria-label="Back to song list">
+      <svg data-icon="back-arrow" viewBox="0 0 24 24"></svg>
+    </button>
+    <div class="song-view-title">
+      <span id="sv-number" class="sv-number"></span>
+      <h2 id="sv-title"></h2>
+      <p id="sv-alt-title" class="sv-alt-title" hidden></p>
+      <p id="sv-artist" class="sv-artist" hidden></p>
+    </div>
+  </header>
+
+  <div class="transpose-bar">
+    <span class="transpose-label"><span id="t-keyLabel">Key:</span> <strong id="sv-key">—</strong></span>
+    <div class="transpose-controls">
+      <button id="transpose-down" class="chip-btn" aria-label="Transpose down one semitone">−</button>
+      <span id="transpose-offset" class="transpose-offset">0</span>
+      <button id="transpose-up" class="chip-btn" aria-label="Transpose up one semitone">+</button>
+      <button id="transpose-reset" class="chip-btn chip-btn-text"></button>
+    </div>
+  </div>
+
+  <div class="font-controls">
+    <div class="font-group">
+      <span class="font-group-label" id="t-lyricsGroup">Lyrics</span>
+      <button class="chip-btn" data-font="lyrics-down" aria-label="Decrease lyric size">A−</button>
+      <button class="chip-btn" data-font="lyrics-up" aria-label="Increase lyric size">A+</button>
+    </div>
+    <div class="font-group">
+      <span class="font-group-label" id="t-chordsGroup">Chords</span>
+      <button class="chip-btn" data-font="chords-down" aria-label="Decrease chord size">A−</button>
+      <button class="chip-btn" data-font="chords-up" aria-label="Increase chord size">A+</button>
+    </div>
+  </div>
+
+  <div id="sv-labels" class="sv-labels"></div>
+
+  <div id="lyrics-container" class="lyrics-container"></div>
+
+  <div id="sv-audio" class="sv-audio" hidden></div>
+
+  <div id="sv-links" class="sv-links" hidden></div>
+ </div>
+</main>
+
+<!-- ===== SETTINGS PAGE ===== -->
+<main id="page-settings" class="page" data-page="settings" hidden>
+ <div class="page-inner">
+  <header class="page-header">
+    <h1 id="t-settingsTitle">Settings</h1>
+  </header>
+
+  <section class="settings-section">
+    <h3 class="settings-heading" id="t-sectionAppearance">Appearance</h3>
+    <div class="settings-row">
+      <div class="settings-row-text">
+        <span class="settings-row-title" id="t-darkModeTitle">Dark mode</span>
+        <span class="settings-row-sub" id="t-darkModeSub">Switch between light and dark themes</span>
+      </div>
+      <button id="theme-toggle" class="switch" role="switch" aria-checked="false" aria-label="Toggle dark mode">
+        <span class="switch-knob"></span>
+      </button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-text">
+        <span class="settings-row-title" id="t-accentTitle">Accent color</span>
+        <span class="settings-row-sub" id="t-accentSub">Choose the app's accent color</span>
+      </div>
+      <div class="accent-swatches" role="group" aria-label="Accent color">
+        <button class="accent-swatch" data-accent="periwinkle" aria-pressed="true" aria-label="Periwinkle" style="background:#5B7FDE"></button>
+        <button class="accent-swatch" data-accent="sage" aria-pressed="false" aria-label="Sage" style="background:#6FA37E"></button>
+        <button class="accent-swatch" data-accent="lavender" aria-pressed="false" aria-label="Lavender" style="background:#8C7FCB"></button>
+        <button class="accent-swatch" data-accent="aqua" aria-pressed="false" aria-label="Aqua" style="background:#3FA9B0"></button>
+        <button class="accent-swatch" data-accent="cinnamon" aria-pressed="false" aria-label="Cinnamon" style="background:#A9762F"></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <h3 class="settings-heading" id="t-sectionLangDb">Language &amp; Song Database</h3>
+    <div class="settings-row">
+      <div class="settings-row-text">
+        <span class="settings-row-title" id="t-uiLangTitle">App language</span>
+        <span class="settings-row-sub" id="t-uiLangSub">Choose the language for menus and buttons</span>
+      </div>
+      <select id="ui-lang-select" class="select-input"></select>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-text">
+        <span class="settings-row-title" id="t-dbTitle">Song database</span>
+        <span class="settings-row-sub" id="t-dbSub">Choose which songbook source to use</span>
+      </div>
+      <select id="db-select" class="select-input">
+        <option value="mn">Монгол (Official)</option>
+        <option value="en" disabled id="db-option-en"></option>
+      </select>
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <h3 class="settings-heading" id="t-sectionApp">App</h3>
+    <div class="settings-row">
+      <div class="settings-row-text">
+        <span class="settings-row-title" id="install-title">Install app</span>
+        <span class="settings-row-sub" id="install-sub">Add Next Gen Worship to your home screen for offline, app-like access</span>
+      </div>
+      <button id="install-btn" class="btn-primary" hidden></button>
+      <span id="installed-badge" class="installed-badge" hidden></span>
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-text">
+        <span class="settings-row-title" id="t-reloadTitle">Refresh song database</span>
+        <span class="settings-row-sub" id="t-reloadSub">Re-download all songs, or fully reload the app if something looks out of date</span>
+      </div>
+      <div class="settings-row-actions">
+        <button id="reload-songs-btn" class="btn-secondary" type="button"></button>
+        <button id="reload-app-btn" class="btn-secondary" type="button"></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="settings-section about-section">
+    <h3 class="settings-heading" id="t-sectionAbout">About</h3>
+    <div class="about-block">
+      <img src="icons/about-logo.png" alt="" class="about-logo">
+      <p class="about-label" id="t-versionTitle">Version</p>
+      <p class="about-appname" id="about-version-line">Next Gen Worship</p>
+      <p class="about-description" id="about-description">Offline songbook for Adventist Church.</p>
+      <p class="about-copyright" id="about-copyright"></p>
+      <a class="about-contact-btn" id="about-contact-btn" href="#">
+        <svg data-icon="contact-mail" viewBox="0 0 24 24"></svg>
+        <span id="t-contactBtn">Send feedback</span>
+      </a>
+      <div class="about-contact-fallback" id="about-contact-fallback" hidden>
+        <span id="about-contact-email"></span>
+        <button type="button" id="about-contact-copy" aria-label="Copy email address">
+          <svg data-icon="copy" viewBox="0 0 24 24"></svg>
+        </button>
+      </div>
+      <div class="about-social" id="about-social"></div>
+    </div>
+  </section>
+
+  <blockquote class="scripture-footer">
+    <p id="scripture-verse-text"></p>
+    <cite id="scripture-verse-ref"></cite>
+  </blockquote>
+ </div>
+</main>
+
+
+<!-- ===== BOTTOM NAVIGATION ===== -->
+<nav id="bottom-nav" class="bottom-nav" aria-label="Main navigation">
+ <div class="bottom-nav-inner">
+  <button class="nav-btn is-active" data-nav="songs">
+    <svg data-icon="nav-songs" viewBox="0 0 24 24"></svg>
+    <span id="t-navSongs">Songs</span>
+  </button>
+  <button class="nav-btn" data-nav="settings">
+    <svg data-icon="nav-settings" viewBox="0 0 24 24"></svg>
+    <span id="t-navSettings">Settings</span>
+  </button>
+ </div>
+</nav>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="config.js"></script>
+<script src="lang/config.js"></script>
+<script src="lang/eng.js"></script>
+<script src="lang/mn.js"></script>
+<script src="lang/mn2.js"></script>
+<script src="lang/kr.js"></script>
+<!-- Song data now loads at runtime from data/songs/ (see js/app.js loadSongData) -->
+<script src="js/app.js" defer></script>
+</body>
+</html>
